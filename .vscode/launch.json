@@ -1,0 +1,53 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug perform_templating",
+            "request": "launch",
+            "type": "debugpy",
+            "program": "/home/kd/Desktop/proj/dec/setu-translate/stages/perform_templating.py",
+            "args": [
+                "--glob_path", "/mnt/sea/dolma/openhermes-readability_it2.parquet",
+                "--cache_dir_for_original_data", "/mnt/sea/setu-translate/examples/cache",
+                "--base_save_path", "/mnt/sea/setu-translate/examples/output/open_hermes/doc_csvs",
+                "--save_path", "/mnt/sea/setu-translate/examples/output/open_hermes/templated",
+                "--text_col", "value",
+                "--source_type", "open_hermes",
+                "--translation_type", "sentence",
+                "--use_cache", "False",
+                "--id_col", "doc_id",
+                "--write_style", "batch",
+                "--split", "train[729080]"
+            ],
+            "env": {
+                "HF_DATASETS_CACHE": "/mnt/sea/tmp"
+            },
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "Translate Debug",
+            "request": "launch",
+            "type": "debugpy",
+            "program": "/home/kd/Desktop/proj/dec/setu-translate/stages/tlt_pipelines/translate_joblib.py",
+            "args": [
+                "--root_dir", "/mnt/sea/setu-translate",
+                "--data_files", "/mnt/sea/setu-translate/examples/output/open_hermes/binarized_sentences/*.arrow",
+                "--cache_dir", "/mnt/sea/setu-translate/examples/cache",
+                "--base_save_dir", "/mnt/sea/setu-translate/examples/output/open_hermes/model_out",
+                "--joblib_temp_folder", "/mnt/sea/setu-translate/tmp",
+                "--batch_size", "16",
+                "--total_procs", "24",
+                "--devices", "0"
+            ],
+            "env": {
+                "HF_DATASETS_CACHE": "/mnt/sea/tmp"
+            },
+            "console": "integratedTerminal"
+        }
+
+    ]
+}

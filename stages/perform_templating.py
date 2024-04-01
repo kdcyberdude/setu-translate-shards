@@ -149,6 +149,16 @@ def parse_args():
         choices=["doc", "batch"]
     )
 
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+    )
+
+    parser.add_argument(
+        "--total_procs",
+        type=int
+    )
+
     args = parser.parse_args()
 
     return args
@@ -331,7 +341,7 @@ if __name__ == "__main__":
         args.format,
         data_files=glob.glob(args.glob_path),
         cache_dir=args.cache_dir_for_original_data,
-        num_proc=64,
+        num_proc=args.total_procs,
         split=args.split
     )
 
@@ -348,8 +358,8 @@ if __name__ == "__main__":
                 text_col=args.text_col
             ),
             batched=True,
-            batch_size=256,
-            num_proc=64,
+            batch_size=args.batch_size,
+            num_proc=args.total_procs,
             load_from_cache_file=args.use_cache,
         )
         print(f"Performed `terminal punctuation check`")
@@ -366,8 +376,8 @@ if __name__ == "__main__":
             translation_type=args.translation_type,
         ),
         batched=True,
-        batch_size=256,
-        num_proc=64,
+        batch_size=args.batch_size,
+        num_proc=args.total_procs,
         remove_columns=ds.features,
         load_from_cache_file=args.use_cache,
     )
@@ -376,8 +386,8 @@ if __name__ == "__main__":
     ds_templated_filtered = ds_templated.filter(
         lambda samples: [ True if samples["doc_id"][i] != str(None) else False for i in range(len(samples["doc_id"])) ],
         batched=True,
-        batch_size=256,
-        num_proc=64,
+        batch_size=args.batch_size,
+        num_proc=args.total_procs,
         load_from_cache_file=args.use_cache,
     )
     print(f"Filtered `null` text docs")
@@ -397,8 +407,8 @@ if __name__ == "__main__":
                 base_save_path=args.base_save_path,
             ),
             batched=True,
-            batch_size=256,
-            num_proc=64,
+            batch_size=args.batch_size,
+            num_proc=args.total_procs,
             load_from_cache_file=args.use_cache,
             with_indices=True
         )
@@ -406,7 +416,7 @@ if __name__ == "__main__":
 
         csv_paths = ds_templated_filtered.remove_columns([col for col in ds_templated_filtered.features if col != "csv_path"])
         csv_paths_file = os.path.join(args.base_save_path, "paths.csv")
-        csv_paths.to_csv(csv_paths_file, num_proc=64)
+        csv_paths.to_csv(csv_paths_file, num_proc=24)
         print(f"Saved `paths.csv` to {csv_paths_file}")
 
     ds_templated_filtered = ds_templated_filtered.map(
@@ -415,15 +425,15 @@ if __name__ == "__main__":
                 base_save_path=args.base_save_path,
             ),
             batched=True,
-            batch_size=256,
-            num_proc=64,
+            batch_size=args.batch_size,
+            num_proc=args.total_procs,
             load_from_cache_file=args.use_cache,
-            with_indices=True
+            with_indices=True,
         )
 
     os.makedirs(args.save_path, exist_ok=True)
 
-    ds_templated_filtered.save_to_disk(args.save_path, num_proc=64)
+    ds_templated_filtered.save_to_disk(args.save_path, num_proc=args.total_procs)
     print(f"Saved `templated` dataset to {args.save_path}")
     
 

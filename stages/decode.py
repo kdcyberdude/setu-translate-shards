@@ -95,18 +95,23 @@ def decode(
 
 def save_to_str_lvl(batch):
     written_file = []
-    for i in range(len(batch["sid"])):
+    created_dirs = set()  # Keep track of already created directories
+
+    for sid, tlt_file_loc, translated in zip(batch["sid"], batch["tlt_file_loc"], batch["translated"]):
         try:
-            file_dir = os.path.dirname(batch["tlt_file_loc"][i])
-            os.makedirs(file_dir, exist_ok=True)
-            with open(batch["tlt_file_loc"][i], "w") as str_f:
-                str_f.write(batch["translated"][i])
-            written_file += [True]
-        except Exception as e:
-            written_file += [False]
-    return batch | {
-        "written": written_file
-    }
+            file_dir = os.path.dirname(tlt_file_loc)
+            if file_dir not in created_dirs:
+                os.makedirs(file_dir, exist_ok=True)
+                created_dirs.add(file_dir)
+
+            with open(tlt_file_loc, "w") as str_f:
+                str_f.write(translated)
+            written_file.append(True)
+        except Exception:
+            written_file.append(False)
+
+    return batch | {"written": written_file}
+
 
 if __name__ == "__main__":
 
@@ -120,7 +125,7 @@ if __name__ == "__main__":
         split="train"
     )
 
-    print("Loaded Dataset....")
+    print("Loaded Dataset to decode....")
 
     decoded_ds = ds.map(
         partial(
@@ -142,6 +147,7 @@ if __name__ == "__main__":
         )
 
     os.makedirs(args.decode_dir, exist_ok=True)
+    print('Saving Decoded Dataset....')
 
     decoded_ds.save_to_disk(
         args.decode_dir,

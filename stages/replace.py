@@ -137,7 +137,9 @@ if __name__ == "__main__":
         split="train",
     )
 
-    replace_ds = paths_ds.select(range(4)).map(
+    print("Loaded Dataset to replace....")
+
+    replace_ds = paths_ds.map(
         partial(replace_translated, decode_base_path=args.decode_base_path),
         batched=True,
         batch_size=4,
@@ -145,6 +147,7 @@ if __name__ == "__main__":
         load_from_cache_file=False,
     )
 
+    print(replace_ds)
     os.makedirs(args.translated_save_path, exist_ok=True)
     replace_ds.save_to_disk(
         args.translated_save_path,

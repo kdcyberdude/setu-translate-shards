@@ -153,6 +153,7 @@ if __name__ == "__main__":
 
     os.makedirs(args.binarized_dir, exist_ok=True)
 
+    print('Saving Binarized Dataset....')
     binarized_ds.save_to_disk(
         args.binarized_dir,
         num_proc=args.total_procs,
