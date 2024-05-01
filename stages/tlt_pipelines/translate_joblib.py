@@ -73,6 +73,39 @@ def parse_args():
 
     return args
 
+def find_optimal_batch_size(dataset_length, min_batch_size, max_batch_size):
+    """
+    Finds the optimal batch size within a given range that minimizes truncation of a dataset.
+    
+    Parameters:
+    dataset_length (int): The size of the dataset.
+    min_batch_size (int): The minimum allowed batch size.
+    max_batch_size (int): The maximum allowed batch size.
+    
+    Returns:
+    int: The optimal batch size within the specified range that minimizes dataset truncation.
+    """
+    # Ensure the search range is valid
+    if min_batch_size > max_batch_size or dataset_length <= 0:
+        raise ValueError("Invalid parameters: Ensure dataset_length > 0 and min_batch_size <= max_batch_size.")
+    
+    optimal_batch_size = min_batch_size
+    min_remainder = dataset_length % min_batch_size
+
+    for batch_size in range(min_batch_size + 1, max_batch_size + 1):
+        current_remainder = dataset_length % batch_size
+        
+        # Optimal batch size found if no truncation
+        if current_remainder == 0:
+            return batch_size
+        
+        # Update optimal batch size if a smaller remainder is found
+        if current_remainder < min_remainder:
+            min_remainder = current_remainder
+            optimal_batch_size = batch_size
+    
+    return optimal_batch_size
+
 def padding_collator(
     batch, 
     keys_to_pad=[
@@ -206,7 +239,7 @@ def _mp_fn(ds, base_save_dir, batch_size, rank, device, world_size, procs_to_wri
     os.makedirs(save_dir, exist_ok=True)
     run_ds.save_to_disk(save_dir, num_proc=procs_to_write)
     print('Removing temporary translated dataset checkpoint...')
-    # remove_checkpoint(f"checkpoint_rank_{rank}.pth.tar")
+    remove_checkpoint(f"checkpoint_rank_{rank}.pth.tar")
 
 
     return True
@@ -221,9 +254,10 @@ if __name__ == "__main__":
         data_files=glob.glob(args.data_files),
         num_proc=args.total_procs,
         cache_dir=args.cache_dir,
-        # split="train",
         split="train"
     )
+
+    args.batch_size = find_optimal_batch_size(len(ds), args.batch_size, 390)
 
     batch_status = Parallel(
         n_jobs=len(args.devices),

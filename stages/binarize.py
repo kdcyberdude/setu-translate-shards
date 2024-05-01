@@ -23,11 +23,6 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Perform binarization")
 
     parser.add_argument(
-        "--root_dir",
-        type=str,
-    )
-
-    parser.add_argument(
         "--data_files",
         type=str,
     )
