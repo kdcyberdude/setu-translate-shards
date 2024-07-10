@@ -1,0 +1,12 @@
+datasets
+transformers
+datatrove[all]
+torch
+tqdm
+flask
+huggingface_hub
+pandas
+sentencepiece
+gunicorn
+healthcheck
+nvitop

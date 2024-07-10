@@ -1,0 +1,18 @@
+FROM nvcr.io/nvidia/pytorch:23.10-py3
+WORKDIR /app
+
+COPY . /app
+RUN apt-get update && apt-get install -y git && apt-get clean
+RUN python3 -m pip install nltk sacremoses pandas regex mock "transformers>=4.33.2" mosestokenizer
+RUN python3 -c "import nltk; nltk.download('punkt')"
+RUN python3 -m pip install bitsandbytes scipy accelerate datasets
+WORKDIR /app/IndicTransTokenizer
+RUN python3 -m pip install --editable ./
+WORKDIR /app
+
+RUN pip install -r salad_requirements.txt
+
+EXPOSE 5000
+CMD ["python3", "app.py"]
+# CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:5000", "app:app"]
+
